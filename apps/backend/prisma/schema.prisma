@@ -1,0 +1,77 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+  email    String @unique
+  password String
+  role     String @default("user")
+
+  endpoints     Endpoint[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Endpoint {
+  id            String   @id @default(uuid())
+  name          String
+  url           String
+  userId        String
+  checkInterval Int      @default(300000)
+  timeout       Int      @default(10000)
+  status        String   @default("active")
+  lastChecked   DateTime @default(now())
+  responseTime  Int      @default(0)
+  availability  Float    @default(100)
+
+  user User @relation(fields: [userId], references: [id])
+
+  monitorLogs  MonitorLog[]
+  Notification Notification[]
+
+  @@map("endpoints")
+}
+
+model MonitorLog {
+  id           String   @id @default(uuid())
+  endpointId   String
+  timestamp    DateTime @default(now())
+  statusCode   Int?
+  responseTime Int?
+  success      Boolean
+  errorMessage String?
+  errorType    String?
+
+  endpoint Endpoint @relation(fields: [endpointId], references: [id])
+
+  @@map("monitor_logs")
+}
+
+model Notification {
+  id         String   @id @default(uuid())
+  userId     String
+  endpointId String
+  type       String
+  message    String
+  read       Boolean  @default(false)
+  timestamp  DateTime @default(now())
+
+  endpoint Endpoint @relation(fields: [endpointId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
