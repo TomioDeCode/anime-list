@@ -14,11 +14,13 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
-  username String @unique
-  email    String @unique
-  password String
-  role     String @default("user")
+  id          String  @id @default(uuid())
+  username    String  @unique
+  email       String  @unique
+  password    String
+  otpSecret   String  @unique
+  isActivated Boolean @default(false)
+  role        String  @default("user")
 
   endpoints     Endpoint[]
   notifications Notification[]
